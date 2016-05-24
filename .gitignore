@@ -1,3 +1,13 @@
+bin/
+gen/
+build.xml.sdk
+build.sdk
+.project
+.settings
+*.iml
+proguard/
+.idea/
+out/
 # Built application files
 *.apk
 *.ap_
