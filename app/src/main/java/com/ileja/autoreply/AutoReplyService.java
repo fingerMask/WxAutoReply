@@ -15,9 +15,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import java.io.IOException;
 import java.util.List;
 
 public class AutoReplyService extends AccessibilityService {
@@ -116,6 +118,7 @@ public class AutoReplyService extends AccessibilityService {
                 for (AccessibilityNodeInfo n : list) {
                     n.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 }
+
             } else {
                 List<AccessibilityNodeInfo> liste = nodeInfo
                         .findAccessibilityNodeInfosByText("Send");
@@ -125,8 +128,22 @@ public class AutoReplyService extends AccessibilityService {
                     }
                 }
             }
+
+            pressBackButton();
         }
 
+    }
+
+    /**
+     * 模拟back按键
+     */
+    private void pressBackButton(){
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            runtime.exec("input keyevent " + KeyEvent.KEYCODE_BACK);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendNotifacationReply(AccessibilityEvent event) {
