@@ -28,6 +28,8 @@ public class AutoReplyService extends AccessibilityService {
     boolean locked = false;
     boolean background = false;
     private String name;
+    private String scontent;
+    AccessibilityNodeInfo itemNodeinfo;
     private KeyguardManager.KeyguardLock kl;
     private Handler handler = new Handler();
 
@@ -42,7 +44,7 @@ public class AutoReplyService extends AccessibilityService {
                 if (!texts.isEmpty()) {
                     for (CharSequence text : texts) {
                         String content = text.toString();
-                        if (content.contains("777")) {
+                        if (TextUtils.isEmpty(content)==false) {
                             if (isScreenLocked()) {
                                 locked = true;
                                 wakeAndUnlock();
@@ -94,10 +96,27 @@ public class AutoReplyService extends AccessibilityService {
             case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
                 android.util.Log.d("maptrix", "get type window down event");
                 if (!hasAction) break;
+                itemNodeinfo = null;
                 String className = event.getClassName().toString();
                 if (className.equals("com.tencent.mm.ui.LauncherUI")) {
                     if (fill()) {
                         send();
+                    }else {
+                        if(itemNodeinfo != null){
+                            itemNodeinfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (fill()) {
+                                        send();
+                                    }
+                                    back2Home();
+                                    release();
+                                    hasAction = false;
+                                }
+                            }, 1000);
+                            break;
+                        }
                     }
                 }
 
@@ -155,9 +174,11 @@ public class AutoReplyService extends AccessibilityService {
                     .getParcelableData();
             String content = notification.tickerText.toString();
             String[] cc = content.split(":");
-            name = cc[0];
+            name = cc[0].trim();
+            scontent = cc[1].trim();
 
             android.util.Log.i("maptrix", "sender name =" + name);
+            android.util.Log.i("maptrix", "sender content =" + scontent);
 
 
             PendingIntent pendingIntent = notification.contentIntent;
@@ -191,6 +212,16 @@ public class AutoReplyService extends AccessibilityService {
             }
 
             android.util.Log.d("maptrix", "class=" + nodeInfo.getClassName());
+            android.util.Log.e("maptrix", "ds=" + nodeInfo.getContentDescription());
+            if(nodeInfo.getContentDescription() != null){
+                int nindex = nodeInfo.getContentDescription().toString().indexOf(name);
+                int cindex = nodeInfo.getContentDescription().toString().indexOf(scontent);
+                android.util.Log.e("maptrix", "nindex=" + nindex + " cindex=" +cindex);
+                if(nindex != -1){
+                    itemNodeinfo = nodeInfo;
+                    android.util.Log.i("maptrix", "find node info");
+                }
+            }
             if ("android.widget.EditText".equals(nodeInfo.getClassName())) {
                 android.util.Log.i("maptrix", "==================");
                 Bundle arguments = new Bundle();
