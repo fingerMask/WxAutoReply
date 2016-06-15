@@ -27,6 +27,7 @@ public class AutoReplyService extends AccessibilityService {
     boolean hasAction = false;
     boolean locked = false;
     boolean background = false;
+    private String name;
     private KeyguardManager.KeyguardLock kl;
     private Handler handler = new Handler();
 
@@ -152,6 +153,13 @@ public class AutoReplyService extends AccessibilityService {
                 && event.getParcelableData() instanceof Notification) {
             Notification notification = (Notification) event
                     .getParcelableData();
+            String content = notification.tickerText.toString();
+            String[] cc = content.split(":");
+            name = cc[0];
+
+            android.util.Log.i("maptrix", "sender name =" + name);
+
+
             PendingIntent pendingIntent = notification.contentIntent;
             try {
                 pendingIntent.send();
@@ -173,6 +181,7 @@ public class AutoReplyService extends AccessibilityService {
 
     private boolean findEditText(AccessibilityNodeInfo rootNode, String content) {
         int count = rootNode.getChildCount();
+
         android.util.Log.d("maptrix", "root class=" + rootNode.getClassName() + ","+ rootNode.getText()+","+count);
         for (int i = 0; i < count; i++) {
             AccessibilityNodeInfo nodeInfo = rootNode.getChild(i);
@@ -183,7 +192,7 @@ public class AutoReplyService extends AccessibilityService {
 
             android.util.Log.d("maptrix", "class=" + nodeInfo.getClassName());
             if ("android.widget.EditText".equals(nodeInfo.getClassName())) {
-                android.util.Log.d("maptrix", "==================");
+                android.util.Log.i("maptrix", "==================");
                 Bundle arguments = new Bundle();
                 arguments.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT,
                         AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD);
